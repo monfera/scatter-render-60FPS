@@ -9,11 +9,30 @@ const vert = `
     }`
 
 const frag = `
+    #ifdef GL_OES_standard_derivatives
+    #extension GL_OES_standard_derivatives : enable
+    #endif
     precision lowp float;
     void main() {
-      float dist = length(2.0 * gl_PointCoord.xy - 1.0);
-      if(dist > 1.0) discard;
-      gl_FragColor = vec4(0, 0, 0, 1);
+      float alpha = 1.0, delta = 0.0;
+    
+      vec2 pxy = 2.0 * gl_PointCoord.xy - 1.0;
+      float dist = length(pxy);
+      float fi = atan(pxy.y, pxy.x);
+
+      float r = 1.0;
+
+      float R = dist - r + 1.0;
+ 
+    #ifdef GL_OES_standard_derivatives
+      delta = fwidth(dist);
+      if(R > 1.0 + delta ) discard; // avoid further calc, blending if possible
+      alpha = 1.0 - smoothstep(1.0 - delta, 1.0 + delta, R);
+    #else
+      if(R > 1.0) discard;
+    #endif
+
+      gl_FragColor = vec4(0, 0, 0, alpha);
     }`
 
 const dpr = window.devicePixelRatio // for svg/html parity in resolution
@@ -26,7 +45,7 @@ root.setAttribute('height', maxHeight * dpr)
 root.style.width = maxWidth + 'px'
 root.style.height = maxHeight + 'px'
 
-const regl = window.createREGL(root)
+const regl = window.createREGL({canvas: root, extensions: ['OES_standard_derivatives']})
 
 document.body.appendChild(root)
 
@@ -74,6 +93,25 @@ const render = () => {
     regl({
       vert,
       frag,
+      blend: {
+        enable: true,
+        func: {
+          srcRGB: 'src alpha',
+          srcAlpha: 1,
+          dstRGB: 'one minus src alpha',
+          dstAlpha: 1
+        },
+        equation: {
+          rgb: 'add',
+          alpha: 'add'
+        },
+        color: [0, 0, 0, 0]
+      },
+
+      depth: {
+        enable: false
+      },
+
       attributes: {
         position: posAttr
       },
