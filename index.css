@@ -6,10 +6,10 @@ div {
 }
 
 span {
-    width: 4px;
-    height: 4px;
+    width: 8px;
+    height: 8px;
     position: absolute;
-    border-radius: 2px;
+    border-radius: 4px;
     background-color: black;
 }
 
