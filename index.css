@@ -6,8 +6,15 @@ div {
 }
 
 span {
-    width: 6px;
-    height: 6px;
+    width: 4px;
+    height: 4px;
     position: absolute;
-    border-radius: 3px;
+    border-radius: 2px;
+    background-color: black;
+}
+
+p {
+    font-family: monospace;
+    font-weight: bold;
+    color: red;
 }

@@ -1,6 +1,9 @@
 const root = document.createElement('div')
 document.body.appendChild(root)
 
+const fps = document.createElement('p')
+document.body.appendChild(fps);
+
 const specWidth = 960
 const specHeight = 500
 
@@ -21,18 +24,21 @@ let positionX = key.map((d, i) => gridPitch / 2 + (i % columns) / columns * grid
 let positionY = key.map((d, i) => gridPitch / 2 + (i - (i % columns)) / columns / rows * griddedHeight)
 
 const points = key.map((d, i) => document.createElement('span'))
-points.forEach((p, i) => p.style.backgroundColor = `rgba(0,0,0,${Math.pow(Math.min(1 - Math.abs(positionX[i] - griddedWidth / 2) / (width / 2), 1 - Math.abs(positionY[i] - griddedHeight / 2) / (height / 2)), 1.5)})`)
+points.forEach(p => root.appendChild(p))
 
-// style
+let lastT = 0
+
 const render = t => {
-  speedX = speedX.map(d => d + (Math.random() - 0.5) / 2 - Math.random() * d / 30)
-  speedY = speedY.map(d => d + (Math.random() - 0.5) / 2 - Math.random() * d / 30)
+  speedX = speedX.map(d => d + (Math.random() - 0.5) / 100 - Math.random() * d / 30)
+  speedY = speedY.map(d => d + (Math.random() - 0.5) / 100 - Math.random() * d / 30)
   positionX = positionX.map((d, i) => (d + speedX[i] + width) % width)
   positionY = positionY.map((d, i) => (d + speedY[i] + height) % height)
   points.forEach((p, i) => {
     const s = p.style
     s.transform = `translate(${positionX[i]}px,${positionY[i]}px)`
   })
+  fps.innerText = Math.round(1000 / (t - lastT)) + ' FPS'
+  lastT = t
 }
 
 const loop = t => {
@@ -41,7 +47,3 @@ const loop = t => {
 }
 
 loop(0)
-
-// append
-points.forEach(p => root.appendChild(p))
-
