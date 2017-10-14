@@ -54,6 +54,8 @@ let positionY = key.map((d, i) => gridPitch / 2 + (i - (i % columns)) / columns 
 
 let lastT = 0
 
+const posAttr = new Float32Array(key.length * 2)
+
 const render = () => {
 
   regl.frame(({time}) => {
@@ -64,10 +66,9 @@ const render = () => {
     positionX = positionX.map((d, i) => (d + speedX[i] + width) % width)
     positionY = positionY.map((d, i) => (d + speedY[i] + height) % height)
 
-    const posAttr = []
     for(let i = 0; i < key.length; i++) {
-      posAttr.push(2 * positionX[i] / maxWidth - 1)
-      posAttr.push(2 * positionY[i] / maxHeight - 1)
+      posAttr[i * 2] = 2 * positionX[i] / maxWidth - 1
+      posAttr[i * 2 + 1] = -(2 * positionY[i] / maxHeight - 1)
     }
 
     regl({
@@ -77,9 +78,7 @@ const render = () => {
         position: posAttr
       },
       count: key.length,
-      primitive: 'points',
-      lineWidth: 2,
-      elements: key
+      primitive: 'points'
     })()
 
     fps.innerText = Math.round(1000 / (t - lastT)) + ' FPS'
