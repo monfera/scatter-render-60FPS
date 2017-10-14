@@ -55,7 +55,7 @@ document.body.appendChild(fps);
 const specWidth = 960
 const specHeight = 500
 
-const specSampleCount = 2250
+const specSampleCount = 14000
 const gridPitch = Math.sqrt(specWidth * specHeight / specSampleCount);
 const columns = Math.floor(specWidth / gridPitch)
 const rows = Math.floor(specSampleCount / columns)
@@ -75,6 +75,36 @@ let lastT = 0
 
 const posAttr = new Float32Array(key.length * 2)
 
+const magic = regl({
+  vert,
+  frag,
+  blend: {
+    enable: true,
+    func: {
+      srcRGB: 'src alpha',
+      srcAlpha: 1,
+      dstRGB: 'one minus src alpha',
+      dstAlpha: 1
+    },
+    equation: {
+      rgb: 'add',
+      alpha: 'add'
+    },
+    color: [0, 0, 0, 0]
+  },
+
+  depth: {
+    enable: false
+  },
+
+  attributes: {
+    position: regl.prop('position')
+  },
+
+  count: key.length,
+  primitive: 'points'
+})
+
 const render = () => {
 
   regl.frame(({time}) => {
@@ -90,34 +120,9 @@ const render = () => {
       posAttr[i * 2 + 1] = -(2 * positionY[i] / maxHeight - 1)
     }
 
-    regl({
-      vert,
-      frag,
-      blend: {
-        enable: true,
-        func: {
-          srcRGB: 'src alpha',
-          srcAlpha: 1,
-          dstRGB: 'one minus src alpha',
-          dstAlpha: 1
-        },
-        equation: {
-          rgb: 'add',
-          alpha: 'add'
-        },
-        color: [0, 0, 0, 0]
-      },
-
-      depth: {
-        enable: false
-      },
-
-      attributes: {
-        position: posAttr
-      },
-      count: key.length,
-      primitive: 'points'
-    })()
+    magic({
+      position: posAttr
+    })
 
     fps.innerText = Math.round(1000 / (t - lastT)) + ' FPS'
     lastT = t
