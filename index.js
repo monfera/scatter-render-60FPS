@@ -1,4 +1,8 @@
-const root = document.createElement('div')
+var ns = 'http://www.w3.org/2000/svg'
+const root = document.createElementNS(ns, 'svg')
+root.setAttribute('width', 1000)
+root.setAttribute('height', 600)
+
 document.body.appendChild(root)
 
 const fps = document.createElement('p')
@@ -7,7 +11,7 @@ document.body.appendChild(fps);
 const specWidth = 960
 const specHeight = 500
 
-const specSampleCount = 700
+const specSampleCount = 1000
 const gridPitch = Math.sqrt(specWidth * specHeight / specSampleCount);
 const columns = Math.floor(specWidth / gridPitch)
 const rows = Math.floor(specSampleCount / columns)
@@ -23,8 +27,11 @@ let speedY = key.map(d => 0)
 let positionX = key.map((d, i) => gridPitch / 2 + (i % columns) / columns * griddedWidth)
 let positionY = key.map((d, i) => gridPitch / 2 + (i - (i % columns)) / columns / rows * griddedHeight)
 
-const points = key.map((d, i) => document.createElement('span'))
-points.forEach(p => root.appendChild(p))
+const points = key.map((d, i) => document.createElementNS(ns, 'circle'))
+points.forEach(p => {
+  p.setAttribute('r', 4)
+  root.appendChild(p)
+})
 
 let lastT = 0
 
