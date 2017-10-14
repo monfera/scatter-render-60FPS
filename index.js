@@ -1,5 +1,20 @@
 const root = document.createElement('canvas')
-const ctx = root.getContext('2d')
+
+const vert = `
+    precision mediump float;
+    attribute vec2 position;
+    void main() {
+      gl_Position = vec4(position, 0, 1);
+      gl_PointSize = 16.0;
+    }`
+
+const frag = `
+    precision lowp float;
+    void main() {
+      float dist = length(2.0 * gl_PointCoord.xy - 1.0);
+      if(dist > 1.0) discard;
+      gl_FragColor = vec4(0, 0, 0, 1);
+    }`
 
 const dpr = window.devicePixelRatio // for svg/html parity in resolution
 
@@ -10,6 +25,8 @@ root.setAttribute('width', maxWidth * dpr)
 root.setAttribute('height', maxHeight * dpr)
 root.style.width = maxWidth + 'px'
 root.style.height = maxHeight + 'px'
+
+const regl = window.createREGL(root)
 
 document.body.appendChild(root)
 
@@ -37,25 +54,37 @@ let positionY = key.map((d, i) => gridPitch / 2 + (i - (i % columns)) / columns 
 
 let lastT = 0
 
-const render = t => {
-  speedX = speedX.map(d => d + (Math.random() - 0.5) / 100 - Math.random() * d / 30)
-  speedY = speedY.map(d => d + (Math.random() - 0.5) / 100 - Math.random() * d / 30)
-  positionX = positionX.map((d, i) => (d + speedX[i] + width) % width)
-  positionY = positionY.map((d, i) => (d + speedY[i] + height) % height)
-  ctx.clearRect(0, 0, maxWidth * dpr, maxHeight * dpr)
-  key.forEach((p, i) => {
-    // interestingly, moving out beginPath/endPath w/ using moveTo reduces performance in Chrome
-    ctx.beginPath()
-    ctx.arc(positionX[i] * dpr, positionY[i] * dpr, 4 * dpr, 0, 2 * Math.PI)
-    ctx.fill()
+const render = () => {
+
+  regl.frame(({time}) => {
+
+    const t = time * 1000
+    speedX = speedX.map(d => d + (Math.random() - 0.5) / 100 - Math.random() * d / 30)
+    speedY = speedY.map(d => d + (Math.random() - 0.5) / 100 - Math.random() * d / 30)
+    positionX = positionX.map((d, i) => (d + speedX[i] + width) % width)
+    positionY = positionY.map((d, i) => (d + speedY[i] + height) % height)
+
+    const posAttr = []
+    for(let i = 0; i < key.length; i++) {
+      posAttr.push(2 * positionX[i] / maxWidth - 1)
+      posAttr.push(2 * positionY[i] / maxHeight - 1)
+    }
+
+    regl({
+      vert,
+      frag,
+      attributes: {
+        position: posAttr
+      },
+      count: key.length,
+      primitive: 'points',
+      lineWidth: 2,
+      elements: key
+    })()
+
+    fps.innerText = Math.round(1000 / (t - lastT)) + ' FPS'
+    lastT = t
   })
-  fps.innerText = Math.round(1000 / (t - lastT)) + ' FPS'
-  lastT = t
 }
 
-const loop = t => {
-  render(t)
-  requestAnimationFrame(loop)
-}
-
-loop(0)
+render()
