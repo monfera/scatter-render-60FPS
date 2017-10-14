@@ -19,7 +19,7 @@ document.body.appendChild(fps);
 const specWidth = 960
 const specHeight = 500
 
-const specSampleCount = 2200
+const specSampleCount = 2250
 const gridPitch = Math.sqrt(specWidth * specHeight / specSampleCount);
 const columns = Math.floor(specWidth / gridPitch)
 const rows = Math.floor(specSampleCount / columns)
@@ -44,6 +44,7 @@ const render = t => {
   positionY = positionY.map((d, i) => (d + speedY[i] + height) % height)
   ctx.clearRect(0, 0, maxWidth * dpr, maxHeight * dpr)
   key.forEach((p, i) => {
+    // interestingly, moving out beginPath/endPath w/ using moveTo reduces performance in Chrome
     ctx.beginPath()
     ctx.arc(positionX[i] * dpr, positionY[i] * dpr, 4 * dpr, 0, 2 * Math.PI)
     ctx.fill()
