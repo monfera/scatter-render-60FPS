@@ -1,14 +1,13 @@
 div {
     overflow: hidden;
-    width: 960px;
-    height: 500px;
+    width: 1000px;
+    height: 600px;
     position: absolute;
 }
 
 span {
-    width: 4px;
-    height: 4px;
-    background-color: black;
+    width: 6px;
+    height: 6px;
     position: absolute;
-    border-radius: 2px;
+    border-radius: 3px;
 }
