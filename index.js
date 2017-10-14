@@ -1,7 +1,15 @@
-var ns = 'http://www.w3.org/2000/svg'
-const root = document.createElementNS(ns, 'svg')
-root.setAttribute('width', 1000)
-root.setAttribute('height', 600)
+const root = document.createElement('canvas')
+const ctx = root.getContext('2d')
+
+const dpr = window.devicePixelRatio // for svg/html parity in resolution
+
+const maxWidth = 1000
+const maxHeight = 600
+
+root.setAttribute('width', maxWidth * dpr)
+root.setAttribute('height', maxHeight * dpr)
+root.style.width = maxWidth + 'px'
+root.style.height = maxHeight + 'px'
 
 document.body.appendChild(root)
 
@@ -11,7 +19,7 @@ document.body.appendChild(fps);
 const specWidth = 960
 const specHeight = 500
 
-const specSampleCount = 1000
+const specSampleCount = 2200
 const gridPitch = Math.sqrt(specWidth * specHeight / specSampleCount);
 const columns = Math.floor(specWidth / gridPitch)
 const rows = Math.floor(specSampleCount / columns)
@@ -27,12 +35,6 @@ let speedY = key.map(d => 0)
 let positionX = key.map((d, i) => gridPitch / 2 + (i % columns) / columns * griddedWidth)
 let positionY = key.map((d, i) => gridPitch / 2 + (i - (i % columns)) / columns / rows * griddedHeight)
 
-const points = key.map((d, i) => document.createElementNS(ns, 'circle'))
-points.forEach(p => {
-  p.setAttribute('r', 4)
-  root.appendChild(p)
-})
-
 let lastT = 0
 
 const render = t => {
@@ -40,9 +42,11 @@ const render = t => {
   speedY = speedY.map(d => d + (Math.random() - 0.5) / 100 - Math.random() * d / 30)
   positionX = positionX.map((d, i) => (d + speedX[i] + width) % width)
   positionY = positionY.map((d, i) => (d + speedY[i] + height) % height)
-  points.forEach((p, i) => {
-    const s = p.style
-    s.transform = `translate(${positionX[i]}px,${positionY[i]}px)`
+  ctx.clearRect(0, 0, maxWidth * dpr, maxHeight * dpr)
+  key.forEach((p, i) => {
+    ctx.beginPath()
+    ctx.arc(positionX[i] * dpr, positionY[i] * dpr, 4 * dpr, 0, 2 * Math.PI)
+    ctx.fill()
   })
   fps.innerText = Math.round(1000 / (t - lastT)) + ' FPS'
   lastT = t
