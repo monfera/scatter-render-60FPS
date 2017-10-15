@@ -51,8 +51,8 @@ const key = [...Array(sampleCount).keys()]
 let positionX = key.map((d, i) => gridPitch / 2 + (i % columns) / columns * griddedWidth)
 let positionY = key.map((d, i) => gridPitch / 2 + (i - (i % columns)) / columns / rows * griddedHeight)
 
-let lastT = 0
-
+let firstT = null
+let frameCount = 0
 
 const magic = regl({
   vert,
@@ -106,8 +106,12 @@ const render = () => {
       position: posAttr
     })
 
-    fps.innerText = Math.round(1000 / (t - lastT)) + ' FPS'
-    lastT = t
+    firstT = firstT || t
+
+    frameCount++
+
+    fps.innerText = Math.ceil(1000 / ((t - firstT) / frameCount)) + ' FPS'
+
   })
 }
 
