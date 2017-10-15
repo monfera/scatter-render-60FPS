@@ -2,10 +2,11 @@ const root = document.createElement('canvas')
 
 const vert = `
     precision mediump float;
-    attribute vec2 position;
-    // attribute float positionZ;
+    attribute vec2 positionFrom;
+    attribute vec2 positionTo;
+    uniform float tween;
     void main() {
-      gl_Position = vec4(position, 0, 1);
+      gl_Position = vec4(mix(positionFrom, positionTo, tween), 0, 1);
       gl_PointSize = 1.0;
     }`
 
@@ -56,6 +57,15 @@ let positionZ = key.map((d, i) => Math.random())
 let firstT = null
 let frameCount = 0
 
+const posAttro = new Float32Array(key.length * 2).map((d, ii) => {
+  const yEh = ii % 2
+  const i = ii - yEh
+  return yEh ? -(2 * positionY[i] / maxHeight - 1) : 2 * positionX[i] / maxWidth - 1
+})
+
+const posAttrd = new Float32Array(key.length * 2).map(() => Math.random() * 2 - 1)
+
+
 const magic = regl({
   vert,
   frag,
@@ -68,21 +78,17 @@ const magic = regl({
   },
 
   attributes: {
-    position: regl.prop('position')/*,
-    positionZ*/
+    positionFrom: posAttro,
+    positionTo: posAttrd
+  },
+
+  uniforms: {
+    tween: regl.prop('tween')
   },
 
   count: key.length,
   primitive: 'points'
 })
-
-const posAttro = new Float32Array(key.length * 2).map((d, ii) => {
-  const yEh = ii % 2
-  const i = ii - yEh
-  return yEh ? -(2 * positionY[i] / maxHeight - 1) : 2 * positionX[i] / maxWidth - 1
-})
-
-const posAttr = new Float32Array(key.length * 2)
 
 const render = () => {
 
@@ -90,12 +96,8 @@ const render = () => {
 
     const t = time * 1000
 
-    for(let i = 0; i < key.length * 2; i++) {
-      posAttr[i] = posAttro[i] + (time / 100) % 0.01
-    }
-
     magic({
-      position: posAttr
+      tween: Math.sin(time) * Math.sin(time)
     })
 
     firstT = firstT || t
