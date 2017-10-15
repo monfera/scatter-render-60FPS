@@ -2,10 +2,11 @@ const root = document.createElement('canvas')
 
 const vert = `
     precision mediump float;
-    attribute vec2 position;
+    attribute float positionX;
+    attribute float positionY;
     void main() {
-      gl_Position = vec4(position, 0, 1);
-      gl_PointSize = 16.0;
+      gl_Position = vec4(positionX, positionY, 0, 1);
+      gl_PointSize = 1.0;
     }`
 
 const frag = `
@@ -14,25 +15,7 @@ const frag = `
     #endif
     precision lowp float;
     void main() {
-      float alpha = 1.0, delta = 0.0;
-    
-      vec2 pxy = 2.0 * gl_PointCoord.xy - 1.0;
-      float dist = length(pxy);
-      float fi = atan(pxy.y, pxy.x);
-
-      float r = 1.0;
-
-      float R = dist - r + 1.0;
- 
-    #ifdef GL_OES_standard_derivatives
-      delta = fwidth(dist);
-      if(R > 1.0 + delta ) discard; // avoid further calc, blending if possible
-      alpha = 1.0 - smoothstep(1.0 - delta, 1.0 + delta, R);
-    #else
-      if(R > 1.0) discard;
-    #endif
-
-      gl_FragColor = vec4(0, 0, 0, alpha);
+      gl_FragColor = vec4(0, 0, 0, 1);
     }`
 
 const dpr = window.devicePixelRatio // for svg/html parity in resolution
@@ -55,7 +38,7 @@ document.body.appendChild(fps);
 const specWidth = 960
 const specHeight = 500
 
-const specSampleCount = 14000
+const specSampleCount = 500000
 const gridPitch = Math.sqrt(specWidth * specHeight / specSampleCount);
 const columns = Math.floor(specWidth / gridPitch)
 const rows = Math.floor(specSampleCount / columns)
@@ -73,7 +56,6 @@ let positionY = key.map((d, i) => gridPitch / 2 + (i - (i % columns)) / columns 
 
 let lastT = 0
 
-const posAttr = new Float32Array(key.length * 2)
 
 const magic = regl({
   vert,
@@ -98,30 +80,39 @@ const magic = regl({
   },
 
   attributes: {
-    position: regl.prop('position')
+    positionX: regl.prop('positionX'),
+    positionY: regl.prop('positionY')
   },
 
   count: key.length,
   primitive: 'points'
 })
 
+const posAttrXo = new Float32Array(key.length).map((d, i) => 2 * positionX[i] / maxWidth - 1)
+const posAttrYo = new Float32Array(key.length).map((d, i) => -(2 * positionY[i] / maxHeight - 1))
+
+const posAttrX = new Float32Array(key.length)
+const posAttrY = new Float32Array(key.length)
+
+const tau = 2 * Math.PI
+
 const render = () => {
 
   regl.frame(({time}) => {
 
     const t = time * 1000
-    speedX = speedX.map(d => d + (Math.random() - 0.5) / 100 - Math.random() * d / 30)
-    speedY = speedY.map(d => d + (Math.random() - 0.5) / 100 - Math.random() * d / 30)
-    positionX = positionX.map((d, i) => (d + speedX[i] + width) % width)
-    positionY = positionY.map((d, i) => (d + speedY[i] + height) % height)
 
     for(let i = 0; i < key.length; i++) {
-      posAttr[i * 2] = 2 * positionX[i] / maxWidth - 1
-      posAttr[i * 2 + 1] = -(2 * positionY[i] / maxHeight - 1)
+      posAttrX[i] = posAttrXo[i] + Math.sin(time % tau) / 1000
+    }
+
+    for(let i = 0; i < key.length; i++) {
+      posAttrY[i] = posAttrYo[i] + Math.cos(time % tau) / 1000
     }
 
     magic({
-      position: posAttr
+      positionX: posAttrX,
+      positionY: posAttrY
     })
 
     fps.innerText = Math.round(1000 / (t - lastT)) + ' FPS'
