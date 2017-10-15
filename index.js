@@ -3,6 +3,7 @@ const root = document.createElement('canvas')
 const vert = `
     precision mediump float;
     attribute vec2 position;
+    // attribute float positionZ;
     void main() {
       gl_Position = vec4(position, 0, 1);
       gl_PointSize = 1.0;
@@ -50,6 +51,7 @@ const height = griddedHeight + gridPitch
 const key = [...Array(sampleCount).keys()]
 let positionX = key.map((d, i) => gridPitch / 2 + (i % columns) / columns * griddedWidth)
 let positionY = key.map((d, i) => gridPitch / 2 + (i - (i % columns)) / columns / rows * griddedHeight)
+let positionZ = key.map((d, i) => Math.random())
 
 let firstT = null
 let frameCount = 0
@@ -58,18 +60,7 @@ const magic = regl({
   vert,
   frag,
   blend: {
-    enable: true,
-    func: {
-      srcRGB: 'src alpha',
-      srcAlpha: 1,
-      dstRGB: 'one minus src alpha',
-      dstAlpha: 1
-    },
-    equation: {
-      rgb: 'add',
-      alpha: 'add'
-    },
-    color: [0, 0, 0, 0]
+    enable: false
   },
 
   depth: {
@@ -77,7 +68,8 @@ const magic = regl({
   },
 
   attributes: {
-    position: regl.prop('position')
+    position: regl.prop('position')/*,
+    positionZ*/
   },
 
   count: key.length,
