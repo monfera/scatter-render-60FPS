@@ -2,10 +2,9 @@ const root = document.createElement('canvas')
 
 const vert = `
     precision mediump float;
-    attribute float positionX;
-    attribute float positionY;
+    attribute vec2 position;
     void main() {
-      gl_Position = vec4(positionX, positionY, 0, 1);
+      gl_Position = vec4(position, 0, 1);
       gl_PointSize = 1.0;
     }`
 
@@ -38,7 +37,7 @@ document.body.appendChild(fps);
 const specWidth = 960
 const specHeight = 500
 
-const specSampleCount = 500000
+const specSampleCount = 1000000
 const gridPitch = Math.sqrt(specWidth * specHeight / specSampleCount);
 const columns = Math.floor(specWidth / gridPitch)
 const rows = Math.floor(specSampleCount / columns)
@@ -49,8 +48,6 @@ const width = griddedWidth + gridPitch
 const height = griddedHeight + gridPitch
 
 const key = [...Array(sampleCount).keys()]
-let speedX = key.map(d => 0)
-let speedY = key.map(d => 0)
 let positionX = key.map((d, i) => gridPitch / 2 + (i % columns) / columns * griddedWidth)
 let positionY = key.map((d, i) => gridPitch / 2 + (i - (i % columns)) / columns / rows * griddedHeight)
 
@@ -80,21 +77,20 @@ const magic = regl({
   },
 
   attributes: {
-    positionX: regl.prop('positionX'),
-    positionY: regl.prop('positionY')
+    position: regl.prop('position')
   },
 
   count: key.length,
   primitive: 'points'
 })
 
-const posAttrXo = new Float32Array(key.length).map((d, i) => 2 * positionX[i] / maxWidth - 1)
-const posAttrYo = new Float32Array(key.length).map((d, i) => -(2 * positionY[i] / maxHeight - 1))
+const posAttro = new Float32Array(key.length * 2).map((d, ii) => {
+  const yEh = ii % 2
+  const i = ii - yEh
+  return yEh ? -(2 * positionY[i] / maxHeight - 1) : 2 * positionX[i] / maxWidth - 1
+})
 
-const posAttrX = new Float32Array(key.length)
-const posAttrY = new Float32Array(key.length)
-
-const tau = 2 * Math.PI
+const posAttr = new Float32Array(key.length * 2)
 
 const render = () => {
 
@@ -102,17 +98,12 @@ const render = () => {
 
     const t = time * 1000
 
-    for(let i = 0; i < key.length; i++) {
-      posAttrX[i] = posAttrXo[i] + Math.sin(time % tau) / 1000
-    }
-
-    for(let i = 0; i < key.length; i++) {
-      posAttrY[i] = posAttrYo[i] + Math.cos(time % tau) / 1000
+    for(let i = 0; i < key.length * 2; i++) {
+      posAttr[i] = posAttro[i] + (time / 100) % 0.01
     }
 
     magic({
-      positionX: posAttrX,
-      positionY: posAttrY
+      position: posAttr
     })
 
     fps.innerText = Math.round(1000 / (t - lastT)) + ' FPS'
