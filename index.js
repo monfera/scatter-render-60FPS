@@ -1,7 +1,7 @@
 const root = document.createElement('canvas')
 
 const vert = `
-    precision mediump float;
+    precision lowp float;
     attribute vec2 positionFrom;
     attribute vec2 positionTo;
     uniform float tween;
@@ -11,9 +11,6 @@ const vert = `
     }`
 
 const frag = `
-    #ifdef GL_OES_standard_derivatives
-    #extension GL_OES_standard_derivatives : enable
-    #endif
     precision lowp float;
     void main() {
       gl_FragColor = vec4(0, 0, 0, 1);
@@ -29,7 +26,7 @@ root.setAttribute('height', maxHeight * dpr)
 root.style.width = maxWidth + 'px'
 root.style.height = maxHeight + 'px'
 
-const regl = window.createREGL({canvas: root, extensions: ['OES_standard_derivatives']})
+const regl = window.createREGL({canvas: root})
 
 document.body.appendChild(root)
 
@@ -97,7 +94,7 @@ const render = () => {
     const t = time * 1000
 
     magic({
-      tween: Math.sin(time) * Math.sin(time)
+      tween: 1 - 0.99 * Math.pow(Math.sin(time * 2), 2)
     })
 
     firstT = firstT || t
