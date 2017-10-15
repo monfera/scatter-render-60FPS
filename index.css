@@ -1,20 +1,7 @@
-div {
-    overflow: hidden;
-    width: 1000px;
-    height: 600px;
-    position: absolute;
-}
-
-span {
-    width: 8px;
-    height: 8px;
-    position: absolute;
-    border-radius: 4px;
-    background-color: black;
-}
-
 p {
     font-family: monospace;
     font-weight: bold;
     color: red;
+    position: absolute;
+    top: 0;
 }
