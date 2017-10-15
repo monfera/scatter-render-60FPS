@@ -36,7 +36,7 @@ document.body.appendChild(fps);
 const specWidth = 960
 const specHeight = 500
 
-const specSampleCount = 1000000
+const specSampleCount = 1500000
 const gridPitch = Math.sqrt(specWidth * specHeight / specSampleCount);
 const columns = Math.floor(specWidth / gridPitch)
 const rows = Math.floor(specSampleCount / columns)
@@ -94,7 +94,7 @@ const render = () => {
     const t = time * 1000
 
     magic({
-      tween: 1 - 0.99 * Math.pow(Math.sin(time * 2), 2)
+      tween: 0.01 * Math.pow(Math.sin(time * 2), 2)
     })
 
     firstT = firstT || t
